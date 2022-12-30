@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.activity.viewModels
@@ -17,6 +18,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.example.al4t_claco.Models.*
 import com.example.al4t_claco.R
 import com.google.android.material.navigation.NavigationView
+//import kotlinx.coroutines.flow.EmptyFlow.collect
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -32,7 +34,8 @@ class CalendarActivity : AppCompatActivity() {
     lateinit var session: sessionManager
 
     private lateinit var btn_CreateEvent :Button
-
+    private lateinit var gridlayout :GridLayout
+    private val activityModel : CalendarViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +55,7 @@ class CalendarActivity : AppCompatActivity() {
         val navView: NavigationView = findViewById<View>(R.id.navView) as NavigationView
         val headerView = navView.getHeaderView(0)
         val user = headerView.findViewById<TextView>(R.id.user)
+        gridlayout = findViewById<GridLayout>(R.id.gridCalendar)
 
         var utilisateur: HashMap<String, String> = session.getUserDetails()
         var name :String = utilisateur.get(sessionManager.companion.KEY_NAME)!!
@@ -77,10 +81,17 @@ class CalendarActivity : AppCompatActivity() {
 
         //CREATE EVENTS
         //TODO: implement the calendar API here
-        val activityModel : CalendarViewModel by viewModels()
 
-        val events = activityModel.get_events()
-        val calendar = Calendar(events)
+        Log.i("Calendar","Starting our calendar")
+
+        //will need to fetch when api will be there
+        //activityModel.fetch_events()
+        var events = activityModel.get_events()
+        Log.i("Calendar","Events size "+events.size.toString())
+
+        //var calendar = activityModel.get_calendar(events)
+        //Log.i("Calendar","Calendar Size" + calendar.size.toString())
+        //var calendar :MutableMap<LocalDate, MutableList<Event>> = HashMap()
 
         btn_CreateEvent = findViewById(R.id.btn_CreateEvent)
         btn_CreateEvent.setOnClickListener {
@@ -142,7 +153,8 @@ class CalendarActivity : AppCompatActivity() {
         //ADD ALL EVENTS IN THE CALENDAR
 
         fun showEvents(events: MutableMap<LocalDate, MutableList<Event>>) {
-            val gridlayout = findViewById<GridLayout>(R.id.gridCalendar)
+            //val gridlayout = findViewById<GridLayout>(R.id.gridCalendar)
+
 
             val today = LocalDateTime.now()
             val sorted = events.toSortedMap()
@@ -214,8 +226,7 @@ class CalendarActivity : AppCompatActivity() {
 
                     //add event button
                     val buttonEvent = Button(this, null, android.R.attr.buttonStyle)
-                    val eventText =
-                        event.name + "\n" + event.startDate.toLocalTime() + " - " + event.endDate.toLocalTime()
+                    val eventText = event.name + "\n" + event.startDate.toLocalTime() + " - " + event.endDate.toLocalTime()
                     buttonEvent.text = eventText
                     buttonEvent.isAllCaps = false
 
@@ -255,13 +266,35 @@ class CalendarActivity : AppCompatActivity() {
                 ) //R.dimen.event_space_height doesn't work for some reason
                 space.layoutParams = spaceParams
                 dayEvents.addView(space)
-
-
                 gridlayout.addView(dayEvents)
             }
-
         }
-        showEvents(calendar.eventsPerDay)
+        //showEvents(calendar)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+              activityModel._CalendarUIState.collect { CalendarUIState  ->
+                  // Update UI elements
+                  Log.i("Calendar","Need to Update ")
+                  //Log.i("Calendar","content " +calendar.size.toString())
+                  val new_events = CalendarUIState.events
+
+                  for(event in events){
+                      Log.i("Calendar ui",event.name.toString())
+                  }
+                  val calendar = activityModel.get_calendar(new_events)
+                  //for ((date,e) in calendar){
+                    //  for (event in e){
+                      //    Log.i("Calendar",event.name.toString())
+                      //}
+                  //}
+                  Log.i("Calendar","content " +calendar.size.toString())
+                  gridlayout.removeAllViews()
+                  showEvents(calendar)
+              }
+          }
+        }
+
+
 
     }
 

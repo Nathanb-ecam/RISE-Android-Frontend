@@ -2,6 +2,7 @@ package com.example.al4t_claco.Activities
 
 import android.app.AlertDialog
 import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -31,17 +32,16 @@ class CreateCalendarEvent : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(com.example.al4t_claco.R.layout.create_calendar_event)
-
-        Log.i("Calendar","Calendar page not showing ");
+        setContentView(R.layout.create_calendar_event)
 
 
-        tvTitle = findViewById(com.example.al4t_claco.R.id.tvNewEventTitle)
-        btnCreateEvent = findViewById(com.example.al4t_claco.R.id.btnCreateEvent)
-        etEventName = findViewById(com.example.al4t_claco.R.id.etEventName)
-        etEventDescription = findViewById(com.example.al4t_claco.R.id.etEventDescription)
-        etEventLocal = findViewById(com.example.al4t_claco.R.id.etEventLocal)
-        datePicker = findViewById(com.example.al4t_claco.R.id.datePicker)
+
+        tvTitle = findViewById(R.id.tvNewEventTitle)
+        btnCreateEvent = findViewById(R.id.btnCreateEvent)
+        etEventName = findViewById(R.id.etEventName)
+        etEventDescription = findViewById(R.id.etEventDescription)
+        etEventLocal = findViewById(R.id.etEventLocal)
+        datePicker = findViewById(R.id.datePicker)
 
 
         //startTime = findViewById(R.id.tpStartTime)
@@ -55,14 +55,14 @@ class CreateCalendarEvent : AppCompatActivity() {
             //dialogBuilder.setTitle(event.name)
             //dialogBuilder.setMessage()
             val li = LayoutInflater.from(this)
-            val myView: View = li.inflate(com.example.al4t_claco.R.layout.event_date_picker, null)
+            val myView: View = li.inflate(R.layout.event_date_picker, null)
             dialogBuilder.setView(myView)
 
             dialogBuilder.setPositiveButton(
-                com.example.al4t_claco.R.string.close,
+                R.string.close,
                 DialogInterface.OnClickListener { dialog, whichButton ->
-                    startTime = myView.findViewById<TimePicker>(com.example.al4t_claco.R.id.tpStartTime)
-                    endTime = myView.findViewById<TimePicker>(com.example.al4t_claco.R.id.tpEndTime)
+                    startTime = myView.findViewById<TimePicker>(R.id.tpStartTime)
+                    endTime = myView.findViewById<TimePicker>(R.id.tpEndTime)
                     activityModel._uiState.value = activityModel._uiState.value.copy(startTimeHour = startTime.hour, startTimeMinute = startTime.minute,
                     endTimeHour = endTime.hour, endTimeMinute = endTime.minute)
                     Toast.makeText(this,startTime.hour.toString()+ startTime.minute.toString(), Toast.LENGTH_SHORT).show()
@@ -72,7 +72,7 @@ class CreateCalendarEvent : AppCompatActivity() {
         }
 
 
-        btnSelectTime = findViewById(com.example.al4t_claco.R.id.btnStartTime)
+        btnSelectTime = findViewById(R.id.btnStartTime)
         btnSelectTime.setOnClickListener {
             showDialogTime()
 
@@ -85,9 +85,16 @@ class CreateCalendarEvent : AppCompatActivity() {
 
             activityModel.create_event(etEventName.text.toString(),etEventLocal.text.toString(),etEventDescription.text.toString(),
             datePicker.year,datePicker.month,datePicker.dayOfMonth);
-            Log.i("Create btn ","Create button pressed")
-
+            Log.i("Create Calendar ","Create button pressed")
+            Toast.makeText(this,etEventName.text.toString()+" added", Toast.LENGTH_SHORT).show()
         }
 
     }
+
+    //override fun onBackPressed() {
+        // Do something here, such as showing a confirmation dialog
+    //    val intent = Intent(this, CalendarActivity::class.java)
+     //   startActivity(intent)
+    //}
+
 }
